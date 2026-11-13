@@ -34,6 +34,29 @@ The debug bundle is written to `target/debug/bundle/macos/Kuerdas Studio.app`. O
 
 The macOS build generates local app/DMG artifacts. Distribution signing and notarization are release work; an unsigned local build is not a signed release. CI checks the frontend and native workspace on Apple Silicon; no hardware audio tests are claimed by CI.
 
+## Release a version
+
+Releases are built by [`.github/workflows/release.yml`](../.github/workflows/release.yml) for macOS (Apple Silicon and Intel), Windows x64 and Linux x64, and published to [GitHub Releases](https://github.com/francepatrick/kuerdas-studio/releases).
+
+1. Set the version everywhere (npm, Cargo, Tauri) and refresh lockfiles:
+
+   ```sh
+   npm run version:set -- 0.2.0
+   npm install --package-lock-only
+   cargo check --workspace
+   ```
+
+2. Move the `Unreleased` notes in [`CHANGELOG.md`](../CHANGELOG.md) under the new version.
+3. Commit, then tag and push:
+
+   ```sh
+   git commit -am "chore: release v0.2.0"
+   git tag v0.2.0
+   git push origin main v0.2.0
+   ```
+
+The workflow fails if the tag does not match the app version. Tags with a suffix such as `v0.2.0-beta.1` publish as pre-releases. Running the workflow manually from the Actions tab builds installers as workflow artifacts without publishing a release. Builds are unsigned; code signing and notarization are future work.
+
 ## Repository
 
 | Path                        | Responsibility                                                             |

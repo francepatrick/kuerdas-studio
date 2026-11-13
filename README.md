@@ -4,21 +4,27 @@
 
 <h1 align="center">Kuerdas Studio</h1>
 
-<p align="center">A guitar recording studio for macOS, built around KPT Pro.</p>
+<p align="center">A desktop guitar recording studio for Windows, macOS and Linux, built around KPT Pro.</p>
 
 <p align="center">
   <a href="https://github.com/francepatrick/kuerdas-studio/actions/workflows/ci.yml"><img src="https://github.com/francepatrick/kuerdas-studio/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" /></a>
-  <img src="https://img.shields.io/badge/platform-macOS%20Apple%20Silicon-lightgrey.svg" alt="macOS Apple Silicon" />
+  <a href="https://github.com/francepatrick/kuerdas-studio/releases/latest"><img src="https://img.shields.io/github/v/release/francepatrick/kuerdas-studio?include_prereleases&label=release" alt="Latest release" /></a>
+  <br />
+  <img src="https://img.shields.io/badge/Windows-x64-0078D6?logo=windows&logoColor=white" alt="Windows x64" />
+  <img src="https://img.shields.io/badge/macOS-Apple%20Silicon%20%7C%20Intel-000000?logo=apple&logoColor=white" alt="macOS Apple Silicon and Intel" />
+  <img src="https://img.shields.io/badge/Linux-x64-FCC624?logo=linux&logoColor=black" alt="Linux x64" />
 </p>
 
 ## Introduction
 
-Kuerdas helps electric guitarists record takes over backing tracks, arrange and mix their recordings, and export WAV files. Sessions are organized in named workspaces on your Mac. [KPT Pro](https://tankpedal.com/products/drop-shipping-yuimer-tank-upgraded-kpt-pro-white-multi-effect-pedal-ann-new-algorithm-electric-guitar-bass-2-in-1-effector?_pos=1&_sid=872ecc6d8&_ss=r) supplies the live guitar tone; drive and EQ can be applied to copies of recorded audio.
+Kuerdas helps electric guitarists record takes over backing tracks, arrange and mix their recordings, and export WAV files. Sessions are organized in named workspaces on your computer. [KPT Pro](https://tankpedal.com/products/drop-shipping-yuimer-tank-upgraded-kpt-pro-white-multi-effect-pedal-ann-new-algorithm-electric-guitar-bass-2-in-1-effector?_pos=1&_sid=872ecc6d8&_ss=r) supplies the live guitar tone; drive and EQ can be applied to copies of recorded audio.
 
 Recording requires a Mac running macOS, KPT Pro connected by USB, and an electric guitar connected to KPT Pro. The observed device appears as **Sinco-Audio** and uses **44.1 kHz**. See the [roadmap](docs/roadmap.md) for future plans.
 
 ## Get Started
+
+Download the latest installer for macOS, Windows or Linux from [Releases](https://github.com/francepatrick/kuerdas-studio/releases/latest). Windows and Linux builds are experimental: KPT Pro hardware has only been exercised on macOS. See the [changelog](CHANGELOG.md) for what's new.
 
 Create a named workspace, connect KPT Pro, then record over an uploaded backing track. Follow the [recording quick start](docs/quick-start.md) for setup, recording, editing and export instructions. For local development, see [Run locally](docs/run-local.md).
 

@@ -25,7 +25,24 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["app", "dmg"],
-    "macOS": { "minimumSystemVersion": "12.0", "infoPlist": "Info.plist" }
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "category": "Music",
+    "shortDescription": "KPT Pro guitar recording studio",
+    "macOS": {
+      "minimumSystemVersion": "12.0",
+      "infoPlist": "Info.plist"
+    },
+    "linux": {
+      "deb": {
+        "depends": ["libasound2"]
+      }
+    }
   }
 }

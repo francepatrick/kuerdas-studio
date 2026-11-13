@@ -11,8 +11,9 @@
     "tauri": "tauri",
     "desktop": "tauri dev",
     "check": "npm run build && npm test",
-    "format": "prettier --write src docs README.md package.json tsconfig.json vite.config.ts src-tauri/tauri.conf.json src-tauri/capabilities/default.json .github/workflows/ci.yml",
-    "format:check": "prettier --check src docs README.md package.json tsconfig.json vite.config.ts src-tauri/tauri.conf.json src-tauri/capabilities/default.json .github/workflows/ci.yml"
+    "format": "prettier --write src docs README.md package.json tsconfig.json vite.config.ts src-tauri/tauri.conf.json src-tauri/capabilities/default.json .github/workflows/ci.yml .github/workflows/release.yml scripts/set-version.mjs",
+    "format:check": "prettier --check src docs README.md package.json tsconfig.json vite.config.ts src-tauri/tauri.conf.json src-tauri/capabilities/default.json .github/workflows/ci.yml .github/workflows/release.yml scripts/set-version.mjs",
+    "version:set": "node scripts/set-version.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.12.4",
