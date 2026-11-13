@@ -6,9 +6,15 @@
 
 <p align="center">A guitar recording studio for macOS, built around KPT Pro.</p>
 
+<p align="center">
+  <a href="https://github.com/francepatrick/kuerdas-studio/actions/workflows/ci.yml"><img src="https://github.com/francepatrick/kuerdas-studio/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" /></a>
+  <img src="https://img.shields.io/badge/platform-macOS%20Apple%20Silicon-lightgrey.svg" alt="macOS Apple Silicon" />
+</p>
+
 ## Introduction
 
-Kuerdas helps electric guitarists record takes over backing tracks, arrange and mix their recordings, and export WAV files. Sessions are organized in named workspaces on your Mac. KPT Pro supplies the live guitar tone; drive and EQ can be applied to copies of recorded audio.
+Kuerdas helps electric guitarists record takes over backing tracks, arrange and mix their recordings, and export WAV files. Sessions are organized in named workspaces on your Mac. [KPT Pro](https://tankpedal.com/products/drop-shipping-yuimer-tank-upgraded-kpt-pro-white-multi-effect-pedal-ann-new-algorithm-electric-guitar-bass-2-in-1-effector?_pos=1&_sid=872ecc6d8&_ss=r) supplies the live guitar tone; drive and EQ can be applied to copies of recorded audio.
 
 Recording requires a Mac running macOS, KPT Pro connected by USB, and an electric guitar connected to KPT Pro. The observed device appears as **Sinco-Audio** and uses **44.1 kHz**. See the [roadmap](docs/roadmap.md) for future plans.
 
@@ -54,3 +60,11 @@ Current limits include 16 tracks, 128 clips, approximately 512 MB of decoded aud
 | [Hardware validation](docs/hardware-validation.md) | KPT Pro compatibility and reliability checks                       |
 | [Roadmap](docs/roadmap.md)                         | Longer-term development goals and milestones                       |
 | [Session notes](docs/session-notes.md)             | Implementation decisions, evidence and open work                   |
+
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for scope, engineering guidelines and checks.
+
+## License
+
+Kuerdas Studio is available under the [MIT License](LICENSE).
