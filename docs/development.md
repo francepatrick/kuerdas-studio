@@ -10,13 +10,13 @@ Tauri 2 hosts a React/TypeScript interface styled with Tailwind CSS and app styl
 
 ```sh
 npm run check
-npm run format:check
+npm run pretty:check
 cargo test --workspace --locked
 cargo fmt --all -- --check
 cargo clippy --workspace --all-targets --locked -- -D warnings
 ```
 
-These commands check frontend types/build, unit tests, formatting and Rust warnings. See [testing](testing.md) for hardware and manual acceptance checks. Automated checks do not establish physical latency, audible quality or sustained recording reliability.
+`npm run check` runs ESLint, the TypeScript typecheck, unit tests and the production build. The remaining commands check formatting and Rust warnings. See [testing](testing.md) for hardware and manual acceptance checks. Automated checks do not establish physical latency, audible quality or sustained recording reliability.
 
 ## Package a local build
 
@@ -33,6 +33,32 @@ npm run tauri -- build --debug --bundles app
 The debug bundle is written to `target/debug/bundle/macos/Kuerdas Studio.app`. Open it from Finder; the built app does not need a running Vite server or installed Rust toolchain.
 
 The macOS build generates local app/DMG artifacts. Distribution signing and notarization are release work; an unsigned local build is not a signed release. CI checks the frontend and native workspace on Apple Silicon; no hardware audio tests are claimed by CI.
+
+## Frontend structure
+
+```text
+src/
+  App.tsx                 Studio shell: state, polling, wiring
+  main.tsx                React entry point
+  components/<feature>/   One PascalCase component per file (timeline, transport, workspaces, effects, ui)
+  config/                 Runtime environment (platform.ts: desktop vs browser preview)
+  constants/              PascalCase files of shared constants (Audio.ts, Timeline.ts)
+  services/<domain>/      Tauri commands, grouped by domain (engine, session, workspaces)
+    <domain>.service.ts     Named async functions that call `invoke`
+    <domain>.interfaces.ts  Types shared with the Rust command layer
+    <domain>.fallback.ts    Empty/idle values for startup and the browser preview
+  stores/                 Zustand stores (`*.store.ts`)
+  utils/                  Pure kebab-case helpers, with colocated `*.test.ts`
+```
+
+Conventions:
+
+- Import with the absolute `@/src/...` alias (e.g. `@/src/services/engine/engine.service`), never relative paths (enforced by ESLint).
+- Use `import type` for type-only imports.
+- Components use named exports and a `<Name>Props` interface.
+- Interface fields are listed alphabetically.
+- The compiler runs with `strict` and `noUncheckedIndexedAccess`, so guard indexed reads.
+- Prettier uses double quotes, semicolons and trailing commas (`npm run pretty`).
 
 ## Release a version
 
@@ -61,7 +87,7 @@ The workflow fails if the tag does not match the app version. Tags with a suffix
 
 | Path                        | Responsibility                                                             |
 | --------------------------- | -------------------------------------------------------------------------- |
-| `src/`                      | React UI, feature views, Zustand preferences, Tauri bridge                 |
+| `src/`                      | React UI; see [Frontend structure](#frontend-structure)                    |
 | `src-tauri/`                | Desktop configuration, input permission, command handlers                  |
 | `crates/kuerdas-audio/`     | Stream lifetime, bounded routing, atomic meters and diagnostics            |
 | `crates/kuerdas-dsp/`       | Allocation-free noise gate and overdrive                                   |

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type PointerEvent } from "react";
 import {
   Guitar,
   AudioLines,
@@ -11,23 +11,30 @@ import {
   Pencil,
   ZoomIn,
   ZoomOut,
-} from 'lucide-react';
-import {
-  formatTime,
-  type EngineStatus,
-  type SessionState,
-  type Track,
-  type Clip,
-} from '../../lib/audio';
+} from "lucide-react";
+
+import { TrackName } from "@/src/components/timeline/TrackName";
+import { LANE_HEIGHT, RULER_HEIGHT } from "@/src/constants/Timeline";
+import type { EngineStatus } from "@/src/services/engine/engine.interfaces";
+import type {
+  Clip,
+  SessionState,
+  Track,
+} from "@/src/services/session/session.interfaces";
+import { formatTime } from "@/src/utils/format-time";
 import {
   draggedPosition,
   droppedLane,
-  LANE_HEIGHT,
-  RULER_HEIGHT,
   overlapSegments,
-} from './editing';
-type Drag = { id: string; start: number; row: number };
-type DragOrigin = {
+} from "@/src/utils/timeline-editing";
+
+interface Drag {
+  id: string;
+  row: number;
+  start: number;
+}
+
+interface DragOrigin {
   id: string;
   start: number;
   clientX: number;
@@ -36,8 +43,9 @@ type DragOrigin = {
   top: number;
   span: number;
   moved: boolean;
-};
-interface Props {
+}
+
+interface TimelineProps {
   session: SessionState;
   status: EngineStatus;
   busy: boolean;
@@ -78,21 +86,21 @@ export function Timeline({
   onMove,
   onSplit,
   onCombine,
-}: Props) {
+}: TimelineProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const origin = useRef<DragOrigin | null>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
-  const [selectedClip, setSelectedClip] = useState('');
+  const [selectedClip, setSelectedClip] = useState("");
   const [selectedTracks, setSelectedTracks] = useState<string[]>([]);
   const [snap, setSnap] = useState(true);
   const [zoom, setZoom] = useState(1);
-  const [combineName, setCombineName] = useState('');
+  const [combineName, setCombineName] = useState("");
   const [rename, setRename] = useState<{ id: string; name: string } | null>(
     null,
   );
-  const [moveSeconds, setMoveSeconds] = useState('0');
-  const [moveTrack, setMoveTrack] = useState('');
+  const [moveSeconds, setMoveSeconds] = useState("0");
+  const [moveTrack, setMoveTrack] = useState("");
   const rate = session.sampleRate || 44100;
   const editable = desktop && !busy && !status.playing && !status.recording;
   const recordStart = useRef(status.positionFrames);
@@ -136,29 +144,29 @@ export function Timeline({
       const dpr = window.devicePixelRatio || 1;
       canvas.width = r.width * dpr;
       canvas.height = r.height * dpr;
-      const c = canvas.getContext('2d');
+      const c = canvas.getContext("2d");
       if (!c) return;
       c.scale(dpr, dpr);
       c.clearRect(0, 0, r.width, r.height);
       for (let i = 0; i <= 8; i++) {
         const x = (i * r.width) / 8;
-        c.strokeStyle = '#2c323c';
+        c.strokeStyle = "#2c323c";
         c.beginPath();
         c.moveTo(x, RULER_HEIGHT);
         c.lineTo(x, r.height);
         c.stroke();
-        c.fillStyle = '#78859a';
-        c.font = '9px monospace';
+        c.fillStyle = "#78859a";
+        c.font = "9px monospace";
         c.fillText(formatTime((end * i) / 8, rate).slice(0, 5), x + 6, 18);
       }
       session.tracks.forEach((track, row) => {
-        c.strokeStyle = '#2b313c';
+        c.strokeStyle = "#2b313c";
         c.beginPath();
         c.moveTo(0, RULER_HEIGHT + (row + 1) * LANE_HEIGHT);
         c.lineTo(r.width, RULER_HEIGHT + (row + 1) * LANE_HEIGHT);
         c.stroke();
         if (track.id === selectedTrack) {
-          c.fillStyle = 'rgba(132,173,212,0.09)';
+          c.fillStyle = "rgba(132,173,212,0.09)";
           c.fillRect(0, RULER_HEIGHT + row * LANE_HEIGHT, r.width, LANE_HEIGHT);
         }
         track.clips.forEach((clip, index) => {
@@ -167,10 +175,10 @@ export function Timeline({
           const width = Math.max(3, (clip.frames / end) * r.width);
           const y = RULER_HEIGHT + (preview?.row ?? row) * LANE_HEIGHT;
           const palette = [
-            '210,181,129',
-            '119,192,207',
-            '180,150,218',
-            '135,196,159',
+            "210,181,129",
+            "119,192,207",
+            "180,150,218",
+            "135,196,159",
           ];
           const color = palette[index % palette.length];
           c.fillStyle = `rgba(${color},${track.mute ? 0.08 : 0.18})`;
@@ -178,7 +186,7 @@ export function Timeline({
           c.fillStyle = `rgba(${color},${track.mute ? 0.25 : 0.65})`;
           const peaks = track.waveforms[clip.id] ?? [];
           for (let i = 0; i < peaks.length; i++) {
-            const amplitude = Math.min(1, peaks[i]) * 26;
+            const amplitude = Math.min(1, peaks[i] ?? 0) * 26;
             c.fillRect(
               start + (i / peaks.length) * width,
               y + 53 - amplitude,
@@ -199,11 +207,11 @@ export function Timeline({
           const x = (segment.start / end) * r.width,
             w = ((segment.end - segment.start) / end) * r.width,
             y = RULER_HEIGHT + row * LANE_HEIGHT;
-          c.fillStyle = 'rgba(141,197,223,0.22)';
+          c.fillStyle = "rgba(141,197,223,0.22)";
           c.fillRect(x, y + 94, w, 10);
           if (w > 38) {
-            c.font = '8px monospace';
-            c.fillStyle = '#b9dfed';
+            c.font = "8px monospace";
+            c.fillStyle = "#b9dfed";
             c.fillText(`MIX ×${segment.count}`, x + 3, y + 102);
           }
         }
@@ -215,11 +223,11 @@ export function Timeline({
           ((status.positionFrames - recordStart.current) / end) * r.width,
         );
         const y = RULER_HEIGHT + Math.max(0, targetRow) * LANE_HEIGHT;
-        c.fillStyle = '#6b303b';
+        c.fillStyle = "#6b303b";
         c.fillRect(x, y + 12, width, 81);
-        c.fillStyle = '#f0acb6';
-        c.font = '10px sans-serif';
-        c.fillText('Recording…', x + 8, y + 34);
+        c.fillStyle = "#f0acb6";
+        c.font = "10px sans-serif";
+        c.fillText("Recording…", x + 8, y + 34);
       }
     };
     const observer = new ResizeObserver(draw);
@@ -250,7 +258,7 @@ export function Timeline({
     if (
       !editable ||
       event.button !== 0 ||
-      (event.target as HTMLElement).closest('button')
+      (event.target as HTMLElement).closest("button")
     )
       return;
     const r = gridRef.current!.getBoundingClientRect();
@@ -314,7 +322,8 @@ export function Timeline({
         initial.top,
         session.tracks.length,
       );
-      onMove(initial.id, session.tracks[row].id, frame);
+      const target = session.tracks[row];
+      if (target) onMove(initial.id, target.id, frame);
     }
     setDrag(null);
   }
@@ -324,7 +333,7 @@ export function Timeline({
         <div>
           <span className="eyebrow">RECORD • ARRANGE • COMBINE</span>
           <h2>
-            Arrangement{' '}
+            Arrangement{" "}
             <span className="heading-note">
               / {session.tracks.length} tracks · {entries.length} clips
             </span>
@@ -376,7 +385,7 @@ export function Timeline({
             type="checkbox"
             checked={snap}
             onChange={(e) => setSnap(e.target.checked)}
-          />{' '}
+          />{" "}
           Snap 0.1 s
         </label>
         <div className="zoom-controls">
@@ -411,7 +420,7 @@ export function Timeline({
               !editable || selectedCount < 2 || session.tracks.length >= 16
             }
             onClick={() =>
-              onCombine(selectedTracks, combineName.trim() || 'Combined track')
+              onCombine(selectedTracks, combineName.trim() || "Combined track")
             }
             title="Render selected clips using track volume/pan. Originals are kept and muted."
           >
@@ -422,12 +431,12 @@ export function Timeline({
       <div className="timeline session-timeline" style={{ height }}>
         <div className="track-list" style={{ minHeight: height }}>
           <div className="track-ruler">
-            SELECT TRACKS TO COMBINE{' '}
-            <span>{String(rows).padStart(2, '0')}</span>
+            SELECT TRACKS TO COMBINE{" "}
+            <span>{String(rows).padStart(2, "0")}</span>
           </div>
           {session.tracks.map((track) => (
             <div
-              className={`session-track ${track.kind} ${selectedTrack === track.id ? 'selected-row' : ''} ${recordTarget === track.id ? 'record-destination' : ''}`}
+              className={`session-track ${track.kind} ${selectedTrack === track.id ? "selected-row" : ""} ${recordTarget === track.id ? "record-destination" : ""}`}
               key={track.id}
               onClick={() => onSelectTrack(track.id)}
               onFocus={() => onSelectTrack(track.id)}
@@ -441,7 +450,7 @@ export function Timeline({
                   disabled={!editable || !track.clips.length}
                   onChange={(e) => selectTrack(track.id, e.target.checked)}
                 />
-                {track.kind === 'take' ? (
+                {track.kind === "take" ? (
                   <Guitar size={14} />
                 ) : (
                   <AudioLines size={14} />
@@ -471,14 +480,14 @@ export function Timeline({
               <div className="track-mix">
                 <button
                   aria-pressed={track.mute}
-                  className={track.mute ? 'lit' : ''}
+                  className={track.mute ? "lit" : ""}
                   onClick={() => onUpdate({ ...track, mute: !track.mute })}
                 >
                   M
                 </button>
                 <button
                   aria-pressed={track.solo}
-                  className={track.solo ? 'lit' : ''}
+                  className={track.solo ? "lit" : ""}
                   onClick={() => onUpdate({ ...track, solo: !track.solo })}
                 >
                   S
@@ -514,13 +523,13 @@ export function Timeline({
                 <span>{track.clips.length} clips</span>
                 <button
                   className={
-                    recordTarget === track.id ? 'arm-track armed' : 'arm-track'
+                    recordTarget === track.id ? "arm-track armed" : "arm-track"
                   }
                   aria-label={`Record into ${track.name}`}
                   aria-pressed={recordTarget === track.id}
                   disabled={busy || status.recording}
                   onClick={() =>
-                    onRecordTarget(recordTarget === track.id ? '' : track.id)
+                    onRecordTarget(recordTarget === track.id ? "" : track.id)
                   }
                 >
                   R
@@ -573,7 +582,7 @@ export function Timeline({
                 tabIndex={0}
                 aria-label={`Audio clip ${clip.name}`}
                 title="Drag to move in time or to another track. Use arrow keys to nudge. Alt disables snap."
-                className={`audio-clip ${selectedClip === clip.id ? 'selected-clip' : ''} ${preview ? 'dragging-clip' : ''}`}
+                className={`audio-clip ${selectedClip === clip.id ? "selected-clip" : ""} ${preview ? "dragging-clip" : ""}`}
                 style={{
                   left: `${((preview?.start ?? clip.startFrame) / end) * 100}%`,
                   width: `${Math.max(0.35, (clip.frames / end) * 100)}%`,
@@ -593,15 +602,15 @@ export function Timeline({
                 }}
                 onKeyDown={(e) => {
                   if (!editable) return;
-                  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                  if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
                     e.preventDefault();
                     onMove(
                       clip.id,
-                      session.tracks[row].id,
+                      track.id,
                       Math.max(
                         0,
                         clip.startFrame +
-                          (e.key === 'ArrowLeft' ? -1 : 1) *
+                          (e.key === "ArrowLeft" ? -1 : 1) *
                             Math.round(rate * (e.shiftKey ? 1 : 0.1)),
                       ),
                     );
@@ -739,7 +748,7 @@ export function Timeline({
               onChange={(e) => setRename({ ...rename, name: e.target.value })}
               maxLength={80}
               onKeyDown={(e) => {
-                if (e.key === 'Escape') setRename(null);
+                if (e.key === "Escape") setRename(null);
               }}
             />
             <div className="modal-actions">
@@ -758,46 +767,5 @@ export function Timeline({
         </div>
       )}
     </section>
-  );
-}
-function TrackName({
-  track,
-  disabled,
-  onRename,
-}: {
-  track: Track;
-  disabled: boolean;
-  onRename: (id: string, name: string) => void;
-}) {
-  const [value, setValue] = useState(track.name);
-  const cancelled = useRef(false);
-  useEffect(() => setValue(track.name), [track.name]);
-  return (
-    <input
-      className="track-name-input"
-      aria-label={`Rename track ${track.name}`}
-      title="Click to rename track"
-      maxLength={80}
-      disabled={disabled}
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      onBlur={() => {
-        if (cancelled.current) {
-          cancelled.current = false;
-          setValue(track.name);
-          return;
-        }
-        if (value.trim() && value.trim() !== track.name)
-          onRename(track.id, value.trim());
-        else setValue(track.name);
-      }}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') e.currentTarget.blur();
-        if (e.key === 'Escape') {
-          cancelled.current = true;
-          e.currentTarget.blur();
-        }
-      }}
-    />
   );
 }

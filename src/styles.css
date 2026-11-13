@@ -1,10 +1,10 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 :root {
   font-family:
     Inter,
     -apple-system,
     BlinkMacSystemFont,
-    'Segoe UI',
+    "Segoe UI",
     sans-serif;
   color: #dedfe5;
   background: #121419;
@@ -1336,7 +1336,7 @@ footer i {
   box-shadow: 0 0 5px #e7c58e30;
 }
 .playhead:before {
-  content: '';
+  content: "";
   position: absolute;
   top: -7px;
   left: -3px;
@@ -1399,7 +1399,7 @@ footer i {
   color: #7d899b;
   border-radius: 3px;
 }
-.tone-mode-switch button[aria-pressed='true'] {
+.tone-mode-switch button[aria-pressed="true"] {
   background: #38342c;
   color: #e0c18e;
 }

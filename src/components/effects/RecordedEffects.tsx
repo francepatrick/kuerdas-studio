@@ -1,15 +1,22 @@
-import { useState } from 'react';
-import { AudioLines, Sparkles } from 'lucide-react';
-import type { RecordedEffects as EffectSettings, Track } from '../../lib/audio';
+import { useState } from "react";
+import { AudioLines, Sparkles } from "lucide-react";
+
+import type {
+  RecordedEffects as EffectSettings,
+  Track,
+} from "@/src/services/session/session.interfaces";
+
+interface RecordedEffectsProps {
+  disabled: boolean;
+  onApply: (id: string, settings: EffectSettings) => void;
+  track?: Track;
+}
+
 export function RecordedEffects({
   track,
   disabled,
   onApply,
-}: {
-  track?: Track;
-  disabled: boolean;
-  onApply: (id: string, settings: EffectSettings) => void;
-}) {
+}: RecordedEffectsProps) {
   const [settings, setSettings] = useState<EffectSettings>({
     drive: 3,
     bass: 0,
@@ -28,7 +35,7 @@ export function RecordedEffects({
       <div className="recorded-effects-body">
         <div className="effects-track-name">
           <span className="small-dot" />
-          <strong>{track?.name ?? 'Select a track'}</strong>
+          <strong>{track?.name ?? "Select a track"}</strong>
         </div>
         <p>
           Add drive and tone shaping to a copy of the recorded audio. The
@@ -37,17 +44,17 @@ export function RecordedEffects({
         <div className="recorded-effects-controls">
           {(
             [
-              { key: 'drive', label: 'Drive', min: 1, max: 20, step: 0.1 },
-              { key: 'bass', label: 'Bass', min: -1, max: 1, step: 0.05 },
-              { key: 'treble', label: 'Treble', min: -1, max: 1, step: 0.05 },
-              { key: 'level', label: 'Output', min: 0, max: 1, step: 0.01 },
+              { key: "drive", label: "Drive", min: 1, max: 20, step: 0.1 },
+              { key: "bass", label: "Bass", min: -1, max: 1, step: 0.05 },
+              { key: "treble", label: "Treble", min: -1, max: 1, step: 0.05 },
+              { key: "level", label: "Output", min: 0, max: 1, step: 0.01 },
             ] as const
           ).map((control) => (
             <label key={control.key}>
               <span>
                 {control.label}
                 <b>
-                  {control.key === 'level'
+                  {control.key === "level"
                     ? `${Math.round(settings.level * 100)}%`
                     : settings[control.key].toFixed(1)}
                 </b>

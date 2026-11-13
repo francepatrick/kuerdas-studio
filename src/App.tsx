@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AudioLines,
   Cable,
@@ -8,57 +8,93 @@ import {
   RefreshCw,
   Settings2,
   X,
-} from 'lucide-react';
+} from "lucide-react";
+
+import { RecordedEffects } from "@/src/components/effects/RecordedEffects";
+import { Timeline } from "@/src/components/timeline/Timeline";
+import { Transport } from "@/src/components/transport/Transport";
+import { Meter } from "@/src/components/ui/Meter";
+import { WorkspaceNameDialog } from "@/src/components/workspaces/WorkspaceNameDialog";
+import { WorkspaceSidebar } from "@/src/components/workspaces/WorkspaceSidebar";
+import { WorkspaceStart } from "@/src/components/workspaces/WorkspaceStart";
+import { isDesktop } from "@/src/config/platform";
+import { idleStatus } from "@/src/services/engine/engine.fallback";
+import type {
+  AudioDevice,
+  EngineStatus,
+} from "@/src/services/engine/engine.interfaces";
 import {
-  audio,
-  channelCount,
+  getEngineStatus,
+  listDevices,
+  playTransport,
+  seekTransport,
+  setInputTrim as setEngineInputTrim,
+  setLoop,
+  startMonitoring,
+  startRecording,
+  stopMonitoring,
+  stopTransport,
+} from "@/src/services/engine/engine.service";
+import { emptySession } from "@/src/services/session/session.fallback";
+import type {
+  SessionState,
+  Track,
+} from "@/src/services/session/session.interfaces";
+import {
+  combineTracks,
+  createTrack,
+  exportAudio,
+  getSession,
+  importAudioPaths,
+  importBacking,
+  moveClip,
+  processTrack,
+  removeTrack,
+  renameClip,
+  renameTrack,
+  splitClip,
+  updateTrack,
+} from "@/src/services/session/session.service";
+import type {
+  WorkspaceDialogState,
+  WorkspaceInfo,
+  WorkspaceView,
+} from "@/src/services/workspaces/workspaces.interfaces";
+import { emptyWorkspaceView } from "@/src/services/workspaces/workspaces.fallback";
+import {
+  closeWorkspace,
+  createWorkspace,
+  listWorkspaces,
+  openWorkspace,
+  renameWorkspace,
+} from "@/src/services/workspaces/workspaces.service";
+import { useStudio } from "@/src/stores/studio.store";
+import {
   canMonitor,
+  channelCount,
   commonSampleRates,
   deviceLabel,
-  desktop,
-  idleStatus,
-  statusError,
-  emptySession,
-  type SessionState,
-  type Track,
-  type AudioDevice,
-  type EngineStatus,
-  type WorkspaceView,
-  type WorkspaceInfo,
-} from './lib/audio';
-import { useStudio } from './stores/studio';
-import { Meter } from './components/Meter';
-import { Timeline } from './features/timeline/Timeline';
-import { RecordedEffects } from './features/effects/RecordedEffects';
-import {
-  WorkspaceSidebar,
-  WorkspaceStart,
-  WorkspaceNameDialog,
-  type WorkspaceDialogState,
-} from './features/workspaces/Workspaces';
-import { Transport } from './features/transport/Transport';
-export default function App() {
+} from "@/src/utils/devices";
+import { statusError } from "@/src/utils/engine-status";
+
+export function App() {
   const { config, setConfig, inputTrim, setInputTrim } = useStudio();
-  const [library, setLibrary] = useState<WorkspaceView>({
-    items: [],
-    active: null,
-  });
+  const [library, setLibrary] = useState<WorkspaceView>(emptyWorkspaceView);
   const [workspaceDialog, setWorkspaceDialog] =
     useState<WorkspaceDialogState | null>(null);
-  const [selectedTrack, setSelectedTrack] = useState('');
+  const [selectedTrack, setSelectedTrack] = useState("");
   useEffect(() => {
-    void audio
-      .workspaces()
+    void listWorkspaces()
       .then(setLibrary)
       .catch((e) => setError(String(e)));
   }, []);
   const [session, setSession] = useState<SessionState>(emptySession);
-  const [recordTarget, setRecordTarget] = useState('');
+  const [recordTarget, setRecordTarget] = useState("");
   const hasAudio = session.tracks.some((t) => t.clips.length > 0);
   useEffect(() => {
     setRecordTarget((current) =>
       current && !session.tracks.some((track) => track.id === current)
-        ? ''
+        ? ""
         : current,
     );
   }, [session.tracks]);
@@ -67,7 +103,7 @@ export default function App() {
   const [devices, setDevices] = useState<AudioDevice[]>([]);
   const [status, setStatus] = useState<EngineStatus>(idleStatus);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [settings, setSettings] = useState(false);
   const mounted = useRef(true);
   const previousDeviceError = useRef(false);
@@ -79,7 +115,7 @@ export default function App() {
   }, []);
   const refresh = useCallback(async () => {
     try {
-      const found = await audio.devices();
+      const found = await listDevices();
       if (mounted.current) setDevices(found);
     } catch (e) {
       setError(String(e));
@@ -101,12 +137,12 @@ export default function App() {
     };
   }, [refresh]);
   useEffect(() => {
-    if (!desktop) return;
+    if (!isDesktop) return;
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout>;
     const poll = async () => {
       try {
-        const s = await audio.status();
+        const s = await getEngineStatus();
         if (!cancelled) {
           receiveStatus(s);
         }
@@ -122,9 +158,9 @@ export default function App() {
     };
   }, []);
   useEffect(() => {
-    if (!desktop) return;
+    if (!isDesktop) return;
     const timer = setTimeout(() => {
-      void audio.setInputTrim(inputTrim).catch((e) => {
+      void setEngineInputTrim(inputTrim).catch((e) => {
         if (mounted.current) setError(String(e));
       });
     }, 25);
@@ -137,16 +173,16 @@ export default function App() {
     const focusable = () =>
       Array.from(
         dialog?.querySelectorAll<HTMLElement>(
-          'button:not(:disabled), select:not(:disabled), input:not(:disabled), [href]',
+          "button:not(:disabled), select:not(:disabled), input:not(:disabled), [href]",
         ) ?? [],
       );
     focusable()[0]?.focus();
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         setSettings(false);
         setWorkspaceDialog(null);
       }
-      if (e.key === 'Tab') {
+      if (e.key === "Tab") {
         const elements = focusable();
         const first = elements[0];
         const last = elements.at(-1);
@@ -159,17 +195,16 @@ export default function App() {
         }
       }
     };
-    document.addEventListener('keydown', handleKey);
+    document.addEventListener("keydown", handleKey);
     return () => {
-      document.removeEventListener('keydown', handleKey);
+      document.removeEventListener("keydown", handleKey);
       previous?.focus();
     };
   }, [settings, workspaceDialog]);
   useEffect(() => {
     let cancelled = false;
-    if (!desktop) return;
-    void audio
-      .session()
+    if (!isDesktop) return;
+    void getSession()
       .then((value) => {
         if (!cancelled) setSession(value);
       })
@@ -203,19 +238,19 @@ export default function App() {
   );
   const run = async (operation: () => Promise<unknown>) => {
     setBusy(true);
-    setError('');
+    setError("");
     try {
       await operation();
-      const next = desktop ? await audio.status() : idleStatus;
+      const next = isDesktop ? await getEngineStatus() : idleStatus;
       receiveStatus(next);
-      setSession(desktop ? await audio.session() : emptySession);
+      setSession(isDesktop ? await getSession() : emptySession);
     } catch (e) {
       setError(String(e));
     } finally {
       setBusy(false);
     }
   };
-  const updateTrack = (track: Track) => {
+  const handleTrackUpdate = (track: Track) => {
     setSession((s) => ({
       ...s,
       tracks: s.tracks.map((t) => (t.id === track.id ? track : t)),
@@ -224,37 +259,37 @@ export default function App() {
     clearTimeout(trackTimers.current[track.id]);
     trackTimers.current[track.id] = setTimeout(() => {
       delete pendingTracks.current[track.id];
-      void audio.updateTrack(track).catch((e) => {
+      void updateTrack(track).catch((e) => {
         setError(String(e));
-        void audio.session().then(setSession);
+        void getSession().then(setSession);
       });
     }, 60);
   };
   const edit = async (operation: () => Promise<unknown>) => {
     if (status.playing || status.recording) {
-      setError('Stop playback or recording before editing.');
+      setError("Stop playback or recording before editing.");
       return;
     }
     await run(async () => {
-      if (status.running) await audio.stopTransport();
+      if (status.running) await stopTransport();
       return operation();
     });
   };
   const importDropped = useRef<(paths: string[]) => void>(() => {});
   importDropped.current = (paths) => {
     if (!busy && library.active)
-      void edit(() => audio.importPaths(paths, config.sampleRate));
+      void edit(() => importAudioPaths(paths, config.sampleRate));
   };
   useEffect(() => {
-    if (!desktop) return;
+    if (!isDesktop) return;
     let cancelled = false;
     let unlisten: (() => void) | undefined;
-    void import('@tauri-apps/api/webviewWindow')
+    void import("@tauri-apps/api/webviewWindow")
       .then(async (api) => {
         const stop = await api
           .getCurrentWebviewWindow()
           .onDragDropEvent((event) => {
-            if (event.payload.type === 'drop')
+            if (event.payload.type === "drop")
               importDropped.current(event.payload.paths);
           });
         if (cancelled) stop();
@@ -267,10 +302,10 @@ export default function App() {
     };
   }, []);
   const input = devices.find(
-    (d) => d.direction === 'input' && d.id === config.inputId,
+    (d) => d.direction === "input" && d.id === config.inputId,
   );
   const output = devices.find(
-    (d) => d.direction === 'output' && d.id === config.outputId,
+    (d) => d.direction === "output" && d.id === config.outputId,
   );
   const channels = channelCount(input, config.sampleRate);
   const sampleRates = commonSampleRates(input, output);
@@ -279,7 +314,7 @@ export default function App() {
     if (sampleRates.length && !sampleRates.includes(config.sampleRate))
       setConfig({ sampleRate: sampleRates[0], inputChannel: 0 });
   }, [
-    sampleRates.join(','),
+    sampleRates.join(","),
     hasAudio,
     config.sampleRate,
     status.running,
@@ -287,19 +322,19 @@ export default function App() {
     setConfig,
   ]);
   const kptConnected = devices.some(
-    (d) => d.direction === 'input' && d.isKptPro,
+    (d) => d.direction === "input" && d.isKptPro,
   );
-  const canStart = !!library.active && desktop && canMonitor(devices, config);
+  const canStart = !!library.active && isDesktop && canMonitor(devices, config);
   const toggle = async () => {
     setBusy(true);
-    setError('');
+    setError("");
     try {
-      if (status.monitoring) await audio.stop();
+      if (status.monitoring) await stopMonitoring();
       else {
-        await audio.setInputTrim(inputTrim);
-        await audio.start(config);
+        await setEngineInputTrim(inputTrim);
+        await startMonitoring(config);
       }
-      receiveStatus(await audio.status());
+      receiveStatus(await getEngineStatus());
     } catch (e) {
       setError(String(e));
     } finally {
@@ -313,16 +348,16 @@ export default function App() {
         clearTimeout(timer);
       const pending = Object.values(pendingTracks.current);
       pendingTracks.current = {};
-      for (const track of pending) await audio.updateTrack(track);
+      for (const track of pending) await updateTrack(track);
       const next = await operation();
       setLibrary(next);
-      setRecordTarget('');
-      setSelectedTrack('');
+      setRecordTarget("");
+      setSelectedTrack("");
       setWorkspaceDialog(null);
     });
   }
-  async function createWorkspace(name: string) {
-    if (desktop) await changeWorkspace(() => audio.createWorkspace(name));
+  async function handleCreateWorkspace(name: string) {
+    if (isDesktop) await changeWorkspace(() => createWorkspace(name));
     else {
       const item: WorkspaceInfo = {
         id: crypto.randomUUID(),
@@ -335,13 +370,13 @@ export default function App() {
       setWorkspaceDialog(null);
     }
   }
-  function openWorkspace(item: WorkspaceInfo) {
+  function handleOpenWorkspace(item: WorkspaceInfo) {
     if (item.requiresName) {
-      setWorkspaceDialog({ mode: 'recover', id: item.id, name: '' });
+      setWorkspaceDialog({ mode: "recover", id: item.id, name: "" });
       return;
     }
     if (item.id === library.active?.id) return;
-    if (desktop) void changeWorkspace(() => audio.openWorkspace(item.id));
+    if (isDesktop) void changeWorkspace(() => openWorkspace(item.id));
     else setLibrary((s) => ({ ...s, active: item }));
   }
   return (
@@ -351,26 +386,26 @@ export default function App() {
         locked={busy || status.playing || status.recording}
         onHome={() =>
           void changeWorkspace(() =>
-            desktop
-              ? audio.closeWorkspace()
+            isDesktop
+              ? closeWorkspace()
               : Promise.resolve({ ...library, active: null }),
           )
         }
-        onCreate={() => setWorkspaceDialog({ mode: 'create', name: '' })}
-        onOpen={openWorkspace}
+        onCreate={() => setWorkspaceDialog({ mode: "create", name: "" })}
+        onOpen={handleOpenWorkspace}
         onRename={(item) =>
           setWorkspaceDialog({
-            mode: item.requiresName ? 'recover' : 'rename',
+            mode: item.requiresName ? "recover" : "rename",
             id: item.id,
-            name: item.requiresName ? '' : item.name,
+            name: item.requiresName ? "" : item.name,
           })
         }
       />
       <main>
         <header className="topbar">
           <div className="breadcrumbs">
-            Workspace <span>/</span>{' '}
-            <strong>{library.active?.name ?? 'Your workspaces'}</strong>
+            Workspace <span>/</span>{" "}
+            <strong>{library.active?.name ?? "Your workspaces"}</strong>
             <ChevronDown size={13} />
           </div>
           <span className="local-badge">
@@ -388,7 +423,7 @@ export default function App() {
           {error && (
             <div className="error" role="alert">
               <span>{error}</span>
-              <button aria-label="Dismiss error" onClick={() => setError('')}>
+              <button aria-label="Dismiss error" onClick={() => setError("")}>
                 <X size={16} />
               </button>
             </div>
@@ -397,8 +432,8 @@ export default function App() {
             <WorkspaceStart
               library={library}
               busy={busy}
-              onCreate={(name) => void createWorkspace(name)}
-              onOpen={openWorkspace}
+              onCreate={(name) => void handleCreateWorkspace(name)}
+              onOpen={handleOpenWorkspace}
             />
           ) : (
             <>
@@ -417,16 +452,16 @@ export default function App() {
                   <Guitar size={16} /> Recording studio
                 </span>
               </div>
-              {!desktop && (
+              {!isDesktop && (
                 <div className="notice">
                   <Headphones size={16} />
                   <span>
-                    Browser preview · Open the desktop app and connect KPT Pro
+                    Browser preview · Open the isDesktop app and connect KPT Pro
                     to enable audio.
                   </span>
                 </div>
               )}
-              {desktop && !kptConnected && (
+              {isDesktop && !kptConnected && (
                 <div className="notice" role="status">
                   <Cable size={17} />
                   <div>
@@ -454,39 +489,39 @@ export default function App() {
                 toggle={() => void toggle()}
                 onRecord={() =>
                   void run(async () => {
-                    await audio.setInputTrim(inputTrim);
-                    await audio.record(
+                    await setEngineInputTrim(inputTrim);
+                    await startRecording(
                       config,
-                      'KPT Pro USB input',
+                      "KPT Pro USB input",
                       recordTarget || null,
                     );
                   })
                 }
-                onPlay={() => void run(() => audio.play(config))}
-                onStop={() => void run(() => audio.stopTransport())}
-                onRewind={() => void run(() => audio.seek(0))}
-                onLoop={() => void run(() => audio.loop(!status.looping))}
+                onPlay={() => void run(() => playTransport(config))}
+                onStop={() => void run(() => stopTransport())}
+                onRewind={() => void run(() => seekTransport(0))}
+                onLoop={() => void run(() => setLoop(!status.looping))}
               />
               <div className="device-strip">
                 <span
                   className={
-                    status.running ? 'status-light running' : 'status-light'
+                    status.running ? "status-light running" : "status-light"
                   }
                 />
                 <strong>
                   {status.running
-                    ? 'Audio engine running'
+                    ? "Audio engine running"
                     : !kptConnected
-                      ? 'KPT Pro required'
-                      : 'Audio engine stopped'}
+                      ? "KPT Pro required"
+                      : "Audio engine stopped"}
                 </strong>
                 <span className="strip-separator" />
                 <span>
-                  IN <b>{input ? deviceLabel(input) : 'No input selected'}</b>
+                  IN <b>{input ? deviceLabel(input) : "No input selected"}</b>
                 </span>
                 <span>
-                  OUT{' '}
-                  <b>{output ? deviceLabel(output) : 'No output selected'}</b>
+                  OUT{" "}
+                  <b>{output ? deviceLabel(output) : "No output selected"}</b>
                 </span>
                 <button onClick={() => setSettings(true)}>
                   Configure <ChevronDown size={12} />
@@ -499,18 +534,18 @@ export default function App() {
                 session={session}
                 status={status}
                 busy={busy}
-                desktop={desktop}
+                desktop={isDesktop}
                 onImport={() =>
-                  void edit(() => audio.importBacking(config.sampleRate))
+                  void edit(() => importBacking(config.sampleRate))
                 }
-                onExport={(id) => void edit(() => audio.export(id ?? null))}
-                onUpdate={updateTrack}
-                onRemove={(id) => void edit(() => audio.removeTrack(id))}
+                onExport={(id) => void edit(() => exportAudio(id ?? null))}
+                onUpdate={handleTrackUpdate}
+                onRemove={(id) => void edit(() => removeTrack(id))}
                 recordTarget={recordTarget}
                 onRecordTarget={setRecordTarget}
                 onCreate={() =>
                   void edit(async () => {
-                    const id = await audio.createTrack(
+                    const id = await createTrack(
                       `Audio track ${session.tracks.length + 1}`,
                       config.sampleRate,
                     );
@@ -518,35 +553,33 @@ export default function App() {
                   })
                 }
                 onRenameTrack={(id, name) =>
-                  void edit(() => audio.renameTrack(id, name))
+                  void edit(() => renameTrack(id, name))
                 }
                 onRenameClip={(id, name) =>
-                  void edit(() => audio.renameClip(id, name))
+                  void edit(() => renameClip(id, name))
                 }
                 onMove={(id, target, frame) =>
-                  void edit(() => audio.moveClip(id, target, frame))
+                  void edit(() => moveClip(id, target, frame))
                 }
-                onSplit={(id, frame) =>
-                  void edit(() => audio.splitClip(id, frame))
-                }
+                onSplit={(id, frame) => void edit(() => splitClip(id, frame))}
                 onCombine={(ids, name) =>
                   void edit(async () => {
-                    const id = await audio.combineTracks(ids, name);
+                    const id = await combineTracks(ids, name);
                     setRecordTarget(id);
                   })
                 }
-                onSeek={(frame) => void run(() => audio.seek(frame))}
+                onSeek={(frame) => void run(() => seekTransport(frame))}
               />
 
               <div className="lower-workspace">
                 <RecordedEffects
                   track={session.tracks.find((t) => t.id === selectedTrack)}
                   disabled={
-                    !desktop || busy || status.playing || status.recording
+                    !isDesktop || busy || status.playing || status.recording
                   }
                   onApply={(id, settings) =>
                     void edit(async () => {
-                      const next = await audio.processTrack(id, settings);
+                      const next = await processTrack(id, settings);
                       setSelectedTrack(next);
                     })
                   }
@@ -581,11 +614,11 @@ export default function App() {
                   </div>
                   <div className="engine-detail">
                     <span>
-                      Sample rate{' '}
+                      Sample rate{" "}
                       <strong>{config.sampleRate.toLocaleString()} Hz</strong>
                     </span>
                     <span>
-                      Requested buffer{' '}
+                      Requested buffer{" "}
                       <strong>{config.bufferFrames} frames</strong>
                     </span>
                     <span>
@@ -603,10 +636,10 @@ export default function App() {
               </div>
               <footer>
                 <span>
-                  <span className="small-dot" />{' '}
+                  <span className="small-dot" />{" "}
                   {status.running
-                    ? 'Listening for your next idea'
-                    : 'Ready when you are'}
+                    ? "Listening for your next idea"
+                    : "Ready when you are"}
                 </span>
                 <span>
                   KUERDAS STUDIO <i>/</i> BUILT AROUND YOUR GUITAR
@@ -642,9 +675,9 @@ export default function App() {
               Select an interface and use headphones. Monitoring is always off
               when the app starts.
             </p>
-            {!desktop && (
+            {!isDesktop && (
               <div className="notice">
-                Audio devices are available in the Tauri desktop app.
+                Audio devices are available in the Tauri isDesktop app.
               </div>
             )}
             <fieldset disabled={busy || status.running}>
@@ -658,7 +691,7 @@ export default function App() {
                 >
                   <option value="">Select KPT Pro…</option>
                   {devices
-                    .filter((d) => d.direction === 'input' && d.isKptPro)
+                    .filter((d) => d.direction === "input" && d.isKptPro)
                     .map((d) => (
                       <option key={d.id} value={d.id}>
                         {deviceLabel(d)}
@@ -693,7 +726,7 @@ export default function App() {
                 >
                   <option value="">Select output…</option>
                   {devices
-                    .filter((d) => d.direction === 'output')
+                    .filter((d) => d.direction === "output")
                     .map((d) => (
                       <option key={d.id} value={d.id}>
                         {deviceLabel(d)}
@@ -752,7 +785,7 @@ export default function App() {
             <div className="modal-actions">
               <button
                 className="subtle-button"
-                disabled={!desktop || busy || status.running}
+                disabled={!isDesktop || busy || status.running}
                 onClick={() => void refresh()}
               >
                 <RefreshCw size={14} /> Refresh devices
@@ -769,20 +802,21 @@ export default function App() {
       )}
       {workspaceDialog && (
         <WorkspaceNameDialog
-          key={`${workspaceDialog.mode}-${workspaceDialog.id ?? ''}`}
+          key={`${workspaceDialog.mode}-${workspaceDialog.id ?? ""}`}
           dialog={workspaceDialog}
           busy={busy}
           onClose={() => setWorkspaceDialog(null)}
           onSubmit={(name) => {
-            if (workspaceDialog.mode === 'create') void createWorkspace(name);
+            if (workspaceDialog.mode === "create")
+              void handleCreateWorkspace(name);
             else
               void changeWorkspace(async () => {
-                const renamed = await audio.renameWorkspace(
+                const renamed = await renameWorkspace(
                   workspaceDialog.id!,
                   name,
                 );
-                return workspaceDialog.mode === 'recover'
-                  ? audio.openWorkspace(workspaceDialog.id!)
+                return workspaceDialog.mode === "recover"
+                  ? openWorkspace(workspaceDialog.id!)
                   : renamed;
               });
           }}

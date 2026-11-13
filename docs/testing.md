@@ -44,7 +44,7 @@ Use [recording.md](recording.md) for storage, file/memory limits, error behavior
 
 ```sh
 npm run check
-npm run format:check
+npm run pretty:check
 cargo fmt --all -- --check
 cargo test --workspace --locked
 cargo clippy --workspace --all-targets --locked -- -D warnings
