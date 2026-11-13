@@ -4,9 +4,9 @@ All notable changes to Kuerdas Studio are documented here. Versions follow [Sema
 
 ## [Unreleased]
 
-## [0.1.0] - 2026-11-13
+## [1.0.1] - 2026-11-13
 
-First public preview.
+First public release.
 
 ### Added
 
@@ -16,5 +16,5 @@ First public preview.
 - Audio import for WAV, MP3, FLAC, M4A and Ogg.
 - Release installers for macOS (Apple Silicon and Intel), Windows and Linux.
 
-[Unreleased]: https://github.com/francepatrick/kuerdas-studio/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/francepatrick/kuerdas-studio/releases/tag/v0.1.0
+[Unreleased]: https://github.com/francepatrick/kuerdas-studio/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/francepatrick/kuerdas-studio/releases/tag/v1.0.1

@@ -1773,7 +1773,7 @@ dependencies = [
 
 [[package]]
 name = "kuerdas-audio"
-version = "0.1.0"
+version = "1.0.1"
 dependencies = [
  "cpal",
  "hound",
@@ -1787,7 +1787,7 @@ dependencies = [
 
 [[package]]
 name = "kuerdas-devices"
-version = "0.1.0"
+version = "1.0.1"
 dependencies = [
  "cpal",
  "serde",
@@ -1795,11 +1795,11 @@ dependencies = [
 
 [[package]]
 name = "kuerdas-dsp"
-version = "0.1.0"
+version = "1.0.1"
 
 [[package]]
 name = "kuerdas-project"
-version = "0.1.0"
+version = "1.0.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -1807,7 +1807,7 @@ dependencies = [
 
 [[package]]
 name = "kuerdas-studio"
-version = "0.1.0"
+version = "1.0.1"
 dependencies = [
  "kuerdas-audio",
  "kuerdas-devices",

@@ -7,9 +7,8 @@
 <p align="center">A desktop guitar recording studio for Windows, macOS and Linux, built around KPT Pro.</p>
 
 <p align="center">
-  <a href="https://github.com/francepatrick/kuerdas-studio/actions/workflows/ci.yml"><img src="https://github.com/francepatrick/kuerdas-studio/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" /></a>
-  <a href="https://github.com/francepatrick/kuerdas-studio/releases/latest"><img src="https://img.shields.io/github/v/release/francepatrick/kuerdas-studio?include_prereleases&label=release" alt="Latest release" /></a>
+  <a href="https://github.com/francepatrick/kuerdas-studio/releases/latest"><img src="https://img.shields.io/badge/release-v1.0.1-2ea44f" alt="Latest release" /></a>
   <br />
   <img src="https://img.shields.io/badge/Windows-x64-0078D6?logo=windows&logoColor=white" alt="Windows x64" />
   <img src="https://img.shields.io/badge/macOS-Apple%20Silicon%20%7C%20Intel-000000?logo=apple&logoColor=white" alt="macOS Apple Silicon and Intel" />

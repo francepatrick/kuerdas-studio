@@ -22,6 +22,17 @@ const files = {
     get: (text) => JSON.parse(text).version,
     set: (text) => text.replace(/("version":\s*")[^"]+(")/, `$1${version}$2`),
   },
+  // Static shields.io badge (repo is private, so dynamic badges can't read it).
+  // Shields escapes "-" as "--" inside badge text.
+  'README.md': {
+    get: (text) =>
+      text.match(/badge\/release-v(.+?)-[0-9a-f]{6}"/)[1].replaceAll('--', '-'),
+    set: (text) =>
+      text.replace(
+        /(badge\/release-v).+?(-[0-9a-f]{6}")/,
+        `$1${version.replaceAll('-', '--')}$2`,
+      ),
+  },
   'Cargo.toml': {
     get: (text) =>
       text.match(/\[workspace\.package\][^[]*?version\s*=\s*"([^"]+)"/)[1],
