@@ -21,7 +21,7 @@ The longer-term direction is a fuller music-production environment. The current 
 
 ## Start recording
 
-Use the desktop app on macOS Apple Silicon with KPT Pro connected by USB. The observed unit appears as **KPT Pro · Sinco-Audio** and uses **44.1 kHz**. Headphones are recommended for monitoring.
+Recording requires a Mac running macOS, a KPT Pro connected by USB, and an electric guitar connected to the KPT Pro. The observed KPT Pro appears as **Sinco-Audio** and uses **44.1 kHz**. Headphones are recommended for monitoring.
 
 Follow the [recording quick start](docs/quick-start.md) to create a workspace, connect the pedal and record your first take. Existing recordings from the earlier build are preserved under **Recovered recordings**; name that workspace to open them.
 
