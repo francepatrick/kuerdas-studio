@@ -19,6 +19,16 @@ The longer-term direction is a fuller music-production environment. The current 
 - **Build your mix:** adjust track volume, pan, mute and solo, then export individual tracks or a stereo WAV mix.
 - **Process recorded audio:** add drive/EQ to a new copy while keeping the original take.
 
+## Screenshots
+
+**Recording workspace**
+
+![Kuerdas Studio recording workspace with workspace navigation, transport, KPT Pro connection prompt and empty arrangement](docs/screenshots/recording-workspace.png)
+
+**Multitrack arrangement**
+
+![Kuerdas Studio multitrack arrangement with recorded guitar clips and overlapping waveforms](docs/screenshots/multitrack-arrangement.png)
+
 ## Start recording
 
 Recording requires a Mac running macOS, a KPT Pro connected by USB, and an electric guitar connected to the KPT Pro. The observed KPT Pro appears as **Sinco-Audio** and uses **44.1 kHz**. Headphones are recommended for monitoring.
