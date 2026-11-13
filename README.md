@@ -1,14 +1,20 @@
-# Kuerdas Studio
+<p align="center">
+  <img src="assets/kuerdas-icon.svg" alt="Kuerdas Studio logo" width="120" />
+</p>
 
-A desktop recording studio for guitarists using KPT Pro, built for macOS Apple Silicon.
+<h1 align="center">Kuerdas Studio</h1>
 
-Kuerdas helps you turn a guitar idea into a recording: play through your pedal, record takes over a backing track, arrange them in a timeline and export your mix. Your work stays in named local workspaces on your Mac.
+<p align="center">A guitar recording studio for macOS, built around KPT Pro.</p>
 
-## Our goal
+## Introduction
 
-Make recording guitar straightforward, from the first take to a finished mix. KPT Pro supplies the guitar tone; Kuerdas provides the workspace to capture, arrange and mix it. You choose sounds on the pedal and can add drive and tone shaping to copies of recorded tracks afterward.
+Kuerdas helps electric guitarists record takes over backing tracks, arrange and mix their recordings, and export WAV files. Sessions are organized in named workspaces on your Mac. KPT Pro supplies the live guitar tone; drive and EQ can be applied to copies of recorded audio.
 
-The longer-term direction is a fuller music-production environment. The current focus is reliable guitar recording, backing tracks, arrangement and mixing. See the [roadmap](docs/roadmap.md) for future plans and acceptance criteria.
+Recording requires a Mac running macOS, KPT Pro connected by USB, and an electric guitar connected to KPT Pro. The observed device appears as **Sinco-Audio** and uses **44.1 kHz**. See the [roadmap](docs/roadmap.md) for future plans.
+
+## Get Started
+
+Create a named workspace, connect KPT Pro, then record over an uploaded backing track. Follow the [recording quick start](docs/quick-start.md) for setup, recording, editing and export instructions. For local development, see [Run locally](docs/run-local.md).
 
 ## What you can do
 
@@ -28,12 +34,6 @@ The longer-term direction is a fuller music-production environment. The current 
 **Multitrack arrangement**
 
 ![Kuerdas Studio multitrack arrangement with recorded guitar clips and overlapping waveforms](docs/screenshots/multitrack-arrangement.png)
-
-## Start recording
-
-Recording requires a Mac running macOS, a KPT Pro connected by USB, and an electric guitar connected to the KPT Pro. The observed KPT Pro appears as **Sinco-Audio** and uses **44.1 kHz**. Headphones are recommended for monitoring.
-
-Follow the [recording quick start](docs/quick-start.md) to create a workspace, connect the pedal and record your first take. Existing recordings from the earlier build are preserved under **Recovered recordings**; name that workspace to open them.
 
 ## Project status
 
