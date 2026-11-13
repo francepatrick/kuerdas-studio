@@ -1,0 +1,13 @@
+node_modules/
+dist/
+target/
+.DS_Store
+*.local
+.tools/
+src-tauri/gen/
+.idea/
+*.tsbuildinfo
+src-tauri/icons/android/
+src-tauri/icons/ios/
+src-tauri/icons/Square*.png
+src-tauri/icons/StoreLogo.png

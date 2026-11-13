@@ -1,0 +1,15 @@
+[package]
+name = "kuerdas-audio"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+cpal.workspace = true
+serde.workspace = true
+kuerdas-dsp.workspace = true
+kuerdas-devices.workspace = true
+rtrb = "0.3"
+hound = "3.5"
+serde_json.workspace = true
+symphonia = { version = "=0.5.5", features = ["mp3", "aac", "isomp4", "alac", "flac", "ogg", "vorbis", "wav", "pcm"] }
